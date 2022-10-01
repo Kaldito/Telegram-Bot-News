@@ -18,7 +18,8 @@ def hacker_news():
 
     soup = BeautifulSoup(yc_web_page, "html.parser")
 
-    article_tags = soup.find_all(name="a", class_="titlelink")
+    article_spans = soup.find_all(name="span", class_="titleline")
+    article_tags = [span.a for span in article_spans]
     score_tags = soup.find_all(name="span", class_="score")
     article_texts = []
     article_links = []
@@ -64,7 +65,7 @@ def fantasy_news():
     }
 
     try:
-        with open("last_note.txt", "r") as data_file:
+        with open("./last_note.txt", "r") as data_file:
             data = data_file.readline()
     except FileNotFoundError:
         with open("last_note.txt", "w") as data_file:
