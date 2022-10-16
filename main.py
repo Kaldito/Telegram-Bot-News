@@ -5,10 +5,24 @@ from decouple import config
 
 # -------------------------- CONSTANTS -------------------------- #
 CHAT_ID = config('CHAT_ID')
+CHAT_ID2 = config('CHAT_ID2')
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN')
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 HACKER_NEWS_LINK = "https://news.ycombinator.com"
 FANTASY_LINK = "https://caballerodelarbolsonriente.blogspot.com"
+CHATS = [CHAT_ID, CHAT_ID2]
+
+
+def send_message(chats, text):
+    for chat in chats:
+        parameters = {
+            "chat_id": chat,
+            "text": text,
+        }
+
+        response = requests.post(url=TELEGRAM_API, params=parameters)
+        response.raise_for_status()
+        print(f"Request Status: {response.json()}\n")
 
 
 # -------------------------- HACKER NEWS -------------------------- #
@@ -34,16 +48,8 @@ def hacker_news():
     best_article = max(votes)
     i_best_article = votes.index(best_article)
 
-    parameters = {
-        "chat_id": int(CHAT_ID),
-        "text": "HACKER NEWS \n\n"
-                f"{article_texts[i_best_article]}. \n"
-                f"{article_links[i_best_article]}"
-    }
-
-    response = requests.post(url=TELEGRAM_API, params=parameters)
-    response.raise_for_status()
-    print(f"Request Status: {response.json()}\n")
+    message = f"HACKER NEWS \n\n {article_texts[i_best_article]}. \n {article_links[i_best_article]}"
+    send_message(CHATS, message)
 
 
 # -------------------------- FANTASY -------------------------- #
@@ -57,12 +63,7 @@ def fantasy_news():
     note_text = note.get_text()
     note_link = note.find(name="a").get("href")
 
-    parameters = {
-        "chat_id": int(CHAT_ID),
-        "text": "EL CABALLERO DEL ARBOL SONRIENTE \n\n"
-                f"{note_text}. \n"
-                f"{note_link}"
-    }
+    message = f"EL CABALLERO DEL ARBOL SONRIENTE \n\n {note_text}. \n {note_link}"
 
     try:
         with open("./last_note.txt", "r") as data_file:
@@ -71,18 +72,14 @@ def fantasy_news():
         with open("last_note.txt", "w") as data_file:
             data_file.write(note_link)
 
-        response = requests.post(url=TELEGRAM_API, params=parameters)
-        response.raise_for_status()
-        print(f"Request Status: {response.json()}\n")
+        send_message(CHATS, message)
     else:
         if note_link != data:
             data = note_link
             with open("last_note.txt", "w") as data_file:
                 data_file.write(data)
 
-            response = requests.post(url=TELEGRAM_API, params=parameters)
-            response.raise_for_status()
-            print(f"Request Status: {response.json()}\n")
+            send_message(CHATS, message)
 
 
 # -------------------------- PROGRAM -------------------------- #
